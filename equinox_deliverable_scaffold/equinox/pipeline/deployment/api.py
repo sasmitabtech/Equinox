@@ -18,7 +18,18 @@ app = FastAPI(title="Equinox Corridor Watch API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+FRONTEND_DIST_DIR = BASE_DIR / "dashboard" / "frontend" / "dist"
 VALID_STATUSES = ("Open", "Assigned", "In Action", "Cleared", "Verified")
+
+# The React bundle is optional during development; when built, FastAPI serves
+# its assets at the same origin as the API. The frontend can also use an
+# explicit VITE_API_BASE_URL when deployed separately in the future.
+if (FRONTEND_DIST_DIR / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST_DIR / "assets")), name="dashboard_assets")
+if (FRONTEND_DIST_DIR / "evidence-posters").is_dir():
+    app.mount("/evidence-posters", StaticFiles(directory=str(FRONTEND_DIST_DIR / "evidence-posters")), name="evidence_posters")
+if (FRONTEND_DIST_DIR / "detector-evidence").is_dir():
+    app.mount("/detector-evidence", StaticFiles(directory=str(FRONTEND_DIST_DIR / "detector-evidence")), name="detector_evidence")
 
 
 class Incident(BaseModel):
@@ -45,7 +56,7 @@ _INCIDENTS: List[Incident] = [
     Incident(
         incident_id="INC-001",
         incident_class="stalled vehicle",
-        location="Hosur Rd — Junction 4",
+        location="Hosur Rd, Junction 4",
         lat=12.845,
         lon=77.663,
         timestamp="10:41:52",
@@ -69,7 +80,7 @@ _INCIDENTS: List[Incident] = [
     Incident(
         incident_id="INC-002",
         incident_class="illegal parking",
-        location="Service Rd — Bl. 9 Gate",
+        location="Service Rd, Bl. 9 Gate",
         lat=12.839,
         lon=77.678,
         timestamp="10:37:10",
@@ -92,7 +103,7 @@ _INCIDENTS: List[Incident] = [
     Incident(
         incident_id="INC-003",
         incident_class="congestion",
-        location="Neeladri Rd — Ramp 2",
+        location="Neeladri Rd, Ramp 2",
         lat=12.851,
         lon=77.671,
         timestamp="10:22:45",
@@ -234,6 +245,9 @@ def serve_video(filename: str):
 # Root route serves the interactive operator dashboard UI
 @app.get("/", response_class=HTMLResponse)
 def serve_dashboard():
+    built_dashboard = FRONTEND_DIST_DIR / "index.html"
+    if built_dashboard.is_file():
+        return FileResponse(str(built_dashboard))
     html_path = BASE_DIR / "dashboard" / "dashboard_mockup.html"
     if html_path.exists():
         return FileResponse(str(html_path))

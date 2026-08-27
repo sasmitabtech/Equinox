@@ -189,6 +189,28 @@ Then open <http://127.0.0.1:8000/>. Useful API routes include `/health`,
 `/incidents/{incident_id}/status`, clearance re-checks, and evidence videos
 under `/api/video/{filename}`.
 
+### Dashboard frontend development
+
+The dashboard is a React/Vite application in `dashboard/frontend`. For a live
+frontend development session, run the FastAPI service above and then:
+
+```bash
+cd dashboard/frontend
+npm install
+npm run dev
+```
+
+Vite proxies `/health`, `/incidents`, and `/api` requests to the local FastAPI
+service. For the production dashboard that FastAPI serves at `/`, run:
+
+```bash
+cd dashboard/frontend
+npm run build
+```
+
+Use `VITE_API_BASE_URL` to point the built frontend at a future remote API
+(for example a Cloudflare Worker); leave it unset for same-origin local serving.
+
 ## Acceptance checks
 
 Run the checks from the project directory after installing requirements:

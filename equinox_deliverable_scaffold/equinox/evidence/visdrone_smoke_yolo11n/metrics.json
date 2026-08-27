@@ -1,0 +1,231 @@
+{
+  "assets": [
+    {
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions.",
+      "file": "annotated/01_success_0000021_00000_d_0000001.jpg",
+      "source_image_id": "0000021_00000_d_0000001"
+    },
+    {
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions.",
+      "file": "annotated/02_success_0000069_01878_d_0000005.jpg",
+      "source_image_id": "0000069_01878_d_0000005"
+    },
+    {
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions.",
+      "file": "annotated/03_success_0000022_00500_d_0000005.jpg",
+      "source_image_id": "0000022_00500_d_0000005"
+    },
+    {
+      "category": "failure",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions.",
+      "file": "annotated/04_failure_0000026_02500_d_0000029.jpg",
+      "source_image_id": "0000026_02500_d_0000029"
+    },
+    {
+      "category": "failure",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions.",
+      "file": "annotated/05_failure_0000076_02142_d_0000009.jpg",
+      "source_image_id": "0000076_02142_d_0000009"
+    }
+  ],
+  "error_categories": {
+    "false_negative_localization": 188,
+    "false_negative_misclassification": 34,
+    "false_negative_missed": 1671,
+    "false_positive_localization": 72,
+    "false_positive_misclassification": 17,
+    "false_positive_no_overlap": 46
+  },
+  "evaluation": {
+    "confidence_threshold": 0.25,
+    "dataset": "VisDrone2019-DET validation smoke subset",
+    "frame_mapping": "CSV clip_id must be 'images'; frame_idx is paired to the lexical sort of val/images, matching run_yolo.discover_frames for the flat images directory.",
+    "images": 50,
+    "iou_threshold": 0.5,
+    "matching": "confidence-ordered greedy one-to-one matching within image and mapped class",
+    "model": "YOLO11n COCO pretrained (direct inference)",
+    "prediction_artifact": "visdrone_smoke_yolo11n_direct.csv",
+    "recorded_inference_seconds": 11.057,
+    "timing_provenance": "Recorded smoke-run wall time supplied with the existing 50-image artifact; this evaluator does not re-run inference."
+  },
+  "limitations": [
+    "This is a 50-image smoke subset, not the official VisDrone evaluation protocol or a held-out Equinox validation set.",
+    "The COCO-pretrained YOLO11n model was not fine-tuned on VisDrone; domain shift, small objects, occlusion, and class definitions materially limit performance.",
+    "Only the conservative compatible taxonomy intersection is evaluated. Unsupported VisDrone classes and unsupported COCO predictions are excluded, not treated as correct or incorrect.",
+    "AP@0.5 is implemented as all-points interpolated AP over the recorded predictions. It is not COCO mAP@[.5:.95].",
+    "No severity, road blockage, lane-clearance, emergency-accessibility, tracking, or temporal validation is established by this detector smoke run."
+  ],
+  "mapping": {
+    "coco_to_evaluation": {
+      "bicycle": "bicycle",
+      "bus": "bus",
+      "car": "car",
+      "motorcycle": "motorcycle",
+      "person": "person",
+      "truck": "truck"
+    },
+    "excluded_ground_truth_counts": {
+      "awning-tricycle": 39,
+      "tricycle": 42,
+      "van": 31
+    },
+    "excluded_prediction_counts": {
+      "bench": 1,
+      "cell phone": 4,
+      "cow": 2,
+      "frisbee": 1,
+      "skateboard": 1,
+      "sports ball": 2,
+      "suitcase": 2,
+      "train": 1,
+      "umbrella": 2
+    },
+    "excluded_visdrone_classes": [
+      "van",
+      "tricycle",
+      "awning-tricycle"
+    ],
+    "predictions_below_confidence_threshold": 0,
+    "visdrone_to_evaluation": {
+      "bicycle": "bicycle",
+      "bus": "bus",
+      "car": "car",
+      "motor": "motorcycle",
+      "pedestrian": "person",
+      "people": "person",
+      "truck": "truck"
+    }
+  },
+  "micro": {
+    "f1": 0.31254237288135595,
+    "fn": 1893,
+    "fp": 135,
+    "map50": 0.18116138205643134,
+    "precision": 0.7734899328859061,
+    "predictions": 596,
+    "recall": 0.19583687340696687,
+    "support": 2354,
+    "tp": 461
+  },
+  "per_class": [
+    {
+      "ap50": 0.018518518518518517,
+      "class": "bicycle",
+      "f1": 0.03508771929824561,
+      "fn": 53,
+      "fp": 2,
+      "precision": 0.3333333333333333,
+      "predictions": 3,
+      "recall": 0.018518518518518517,
+      "support": 54,
+      "tp": 1
+    },
+    {
+      "ap50": null,
+      "class": "bus",
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "predictions": 3,
+      "recall": 0.0,
+      "support": 0,
+      "tp": 0
+    },
+    {
+      "ap50": 0.34209736769247046,
+      "class": "car",
+      "f1": 0.5263157894736842,
+      "fn": 258,
+      "fp": 48,
+      "precision": 0.7798165137614679,
+      "predictions": 218,
+      "recall": 0.397196261682243,
+      "support": 428,
+      "tp": 170
+    },
+    {
+      "ap50": 0.008737864077669901,
+      "class": "motorcycle",
+      "f1": 0.019138755980861243,
+      "fn": 408,
+      "fp": 2,
+      "precision": 0.6666666666666666,
+      "predictions": 6,
+      "recall": 0.009708737864077669,
+      "support": 412,
+      "tp": 4
+    },
+    {
+      "ap50": 0.18089760443794234,
+      "class": "person",
+      "f1": 0.3117744610281924,
+      "fn": 1169,
+      "fp": 76,
+      "precision": 0.7877094972067039,
+      "predictions": 358,
+      "recall": 0.1943487250172295,
+      "support": 1451,
+      "tp": 282
+    },
+    {
+      "ap50": 0.35555555555555557,
+      "class": "truck",
+      "f1": 0.47058823529411764,
+      "fn": 5,
+      "fp": 4,
+      "precision": 0.5,
+      "predictions": 8,
+      "recall": 0.4444444444444444,
+      "support": 9,
+      "tp": 4
+    }
+  ],
+  "schema_version": "1.0",
+  "source_provenance": {
+    "annotation_format": "x,y,w,h,score,category,truncation,occlusion",
+    "class_counts": {
+      "awning-tricycle": 39,
+      "bicycle": 54,
+      "car": 428,
+      "motor": 412,
+      "pedestrian": 966,
+      "people": 485,
+      "tricycle": 42,
+      "truck": 9,
+      "van": 31
+    },
+    "classes": [
+      "pedestrian",
+      "people",
+      "bicycle",
+      "car",
+      "van",
+      "truck",
+      "tricycle",
+      "awning-tricycle",
+      "bus",
+      "motor"
+    ],
+    "download": {
+      "archive": "/Users/m1/things/jay/eclia/Equinox/equinox_deliverable_scaffold/equinox/data/visdrone_cache/VisDrone2019-DET-val.zip",
+      "extracted": "/Users/m1/things/jay/eclia/Equinox/equinox_deliverable_scaffold/equinox/data/visdrone_cache/extracted",
+      "sha256": "abeea063037e5d20398837deb11084e652402a34ddf4f207bdf541a6f2a35ef9",
+      "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/VisDrone2019-DET-val.zip"
+    },
+    "ignored_categories": [
+      0,
+      11
+    ],
+    "images_copied": 50,
+    "limit_per_split": 50,
+    "source": "VisDrone2019-DET",
+    "source_url": "https://github.com/VisDrone/VisDrone-Dataset",
+    "splits": {
+      "val": 50
+    }
+  }
+}

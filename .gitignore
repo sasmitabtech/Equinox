@@ -8,3 +8,8 @@ equinox_deliverable_scaffold/equinox/data/visdrone_smoke/
 # Python bytecode and local interpreter caches.
 __pycache__/
 *.py[cod]
+equinox_deliverable_scaffold/equinox/.venv/
+
+# Local JavaScript dependencies. The built dist/ IS committed:
+# FastAPI serves it and the Cloudflare deploy uses it.
+equinox_deliverable_scaffold/equinox/dashboard/frontend/node_modules/

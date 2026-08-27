@@ -1,0 +1,35 @@
+{
+  "assets": [
+    {
+      "file": "annotated/01_success_0000021_00000_d_0000001.jpg",
+      "source_image_id": "0000021_00000_d_0000001",
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions."
+    },
+    {
+      "file": "annotated/02_success_0000069_01878_d_0000005.jpg",
+      "source_image_id": "0000069_01878_d_0000005",
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions."
+    },
+    {
+      "file": "annotated/03_success_0000022_00500_d_0000005.jpg",
+      "source_image_id": "0000022_00500_d_0000005",
+      "category": "success",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions."
+    },
+    {
+      "file": "annotated/04_failure_0000026_02500_d_0000029.jpg",
+      "source_image_id": "0000026_02500_d_0000029",
+      "category": "failure",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions."
+    },
+    {
+      "file": "annotated/05_failure_0000076_02142_d_0000009.jpg",
+      "source_image_id": "0000076_02142_d_0000009",
+      "category": "failure",
+      "description": "Green boxes are mapped VisDrone ground truth; amber boxes are retained mapped YOLO predictions."
+    }
+  ],
+  "license_note": "Annotated assets are derivative, downscaled visual evidence from the VisDrone2019-DET validation subset. They are included only for review; see source_provenance in metrics.json and the upstream dataset repository for dataset terms."
+}
