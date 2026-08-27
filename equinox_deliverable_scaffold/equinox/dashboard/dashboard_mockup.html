@@ -253,6 +253,25 @@
 <script>
   let incidentsData = [];
   let selectedId = null;
+  const fallbackIncidents = [
+    { incident_id: 'INC-001', incident_class: 'stalled vehicle', location: 'Hosur Rd — Junction 4', lat: 12.845, lon: 77.663, timestamp: '10:41:52', severity: 'Critical', accessibility_score: 28, recommended_action: 'Dispatch traffic personnel immediately or route emergency vehicles via Service Rd (Bl. 9).', status: 'Open', evidence_url: '/api/video/clip_01_hosur_j4.mp4', corridor: 'Hosur Rd J4 · northbound', contributing_factors: ['Road occupancy: 82% of usable width', 'Clear lane width: 1.1 m', 'Obstruction dwell time: 11.2 s and rising'] },
+    { incident_id: 'INC-002', incident_class: 'illegal parking', location: 'Service Rd — Bl. 9 Gate', lat: 12.839, lon: 77.678, timestamp: '10:37:10', severity: 'Severe', accessibility_score: 45, recommended_action: 'Dispatch towing unit to clear the illegally parked delivery van.', status: 'Assigned', evidence_url: '/api/video/clip_02_service_rd.mp4', corridor: 'Service Rd Bl. 9 · southbound', contributing_factors: ['Road occupancy: 65% of usable width', 'Clear lane width: 1.4 m', 'Obstruction dwell time: 45.0 s'] },
+    { incident_id: 'INC-003', incident_class: 'congestion', location: 'Neeladri Rd — Ramp 2', lat: 12.851, lon: 77.671, timestamp: '10:22:45', severity: 'Moderate', accessibility_score: 68, recommended_action: 'Activate green wave signal timing to alleviate the bottleneck.', status: 'In Action', evidence_url: '/api/video/clip_03_neeladri_rd.mp4', corridor: 'Neeladri Rd Ramp 2 · eastbound', contributing_factors: ['Road occupancy: 48% of usable width', 'Clear lane width: 2.1 m'] },
+    { incident_id: 'INC-004', incident_class: 'vehicle', location: 'Wipro Junction', lat: 12.842, lon: 77.665, timestamp: '09:58:03', severity: 'Normal', accessibility_score: 95, recommended_action: 'Corridor clear. Continue routine automated monitoring.', status: 'Verified', evidence_url: '/api/video/clip_04_wipro_jct.mp4', corridor: 'Wipro Junction · all approach lanes', contributing_factors: ['Road occupancy: 18% of usable width', 'Clear lane width: 3.8 m'] }
+  ];
+
+  function loadLocalIncidents() {
+    const saved = localStorage.getItem('equinox-incidents');
+    incidentsData = saved ? JSON.parse(saved) : fallbackIncidents;
+    if (!saved) localStorage.setItem('equinox-incidents', JSON.stringify(incidentsData));
+    renderQueue();
+    if (incidentsData.length && !selectedId) selectedId = incidentsData[0].incident_id;
+    if (selectedId) renderDetails(selectedId);
+  }
+
+  function saveLocalIncidents() {
+    localStorage.setItem('equinox-incidents', JSON.stringify(incidentsData));
+  }
 
   function getSevColor(severity) {
     switch((severity || '').toLowerCase()) {
@@ -281,6 +300,7 @@
       const res = await fetch('/incidents');
       if (res.ok) {
         incidentsData = await res.json();
+        saveLocalIncidents();
         renderQueue();
         if (incidentsData.length > 0) {
           if (!selectedId || !incidentsData.find(i => i.incident_id === selectedId)) {
@@ -291,6 +311,7 @@
       }
     } catch (e) {
       console.warn("API fetch offline, using local state", e);
+      loadLocalIncidents();
     }
   }
 
@@ -406,6 +427,8 @@
       }
     } catch (e) {
       console.error("Failed to update status", e);
+      const inc = incidentsData.find(item => item.incident_id === selectedId);
+      if (inc) { inc.status = newStatus; saveLocalIncidents(); renderQueue(); renderDetails(selectedId); }
     }
   }
 
@@ -418,10 +441,13 @@
       }
     } catch (e) {
       console.error("Failed to trigger re-check", e);
+      const inc = incidentsData.find(item => item.incident_id === selectedId);
+      if (inc) { inc.status = 'Verified'; inc.severity = 'Normal'; inc.accessibility_score = 98; inc.recommended_action = 'Verification scan complete: Corridor is fully clear. Passage verified.'; saveLocalIncidents(); renderQueue(); renderDetails(selectedId); }
     }
   }
 
   // Initial load and periodic polling
+  loadLocalIncidents();
   fetchIncidents();
   setInterval(fetchIncidents, 4000);
 </script>

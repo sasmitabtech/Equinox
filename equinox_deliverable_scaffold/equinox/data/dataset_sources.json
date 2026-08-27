@@ -1,0 +1,14 @@
+{
+  "primary": {
+    "name": "Open Images Dataset V7",
+    "publisher": "Google Research",
+    "url": "https://storage.googleapis.com/openimages/web/index.html",
+    "license": "CC BY 2.0",
+    "use": "Vehicle and road-scene pretraining images; incident severity remains locally labeled in labels.csv."
+  },
+  "local_evaluation": {
+    "name": "Equinox corridor evaluation set",
+    "source": "data/raw and data/detections/detections.csv",
+    "note": "Four local clips are reproducible pipeline fixtures, not a replacement for the Google-sourced training images."
+  }
+}
