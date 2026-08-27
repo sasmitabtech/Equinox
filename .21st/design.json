@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "project": {
+    "name": "Equinox",
+    "productType": null,
+    "stack": []
+  },
+  "sources": {
+    "tokens": [],
+    "components": [],
+    "assets": [],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "light",
+    "colors": {
+      "canvas": "warm bone",
+      "ink": "charcoal",
+      "semantic": "desaturated red, amber, green, and blue"
+    },
+    "typography": {
+      "ui": "Geist-style system sans",
+      "data": "monospace only for measurements and identifiers"
+    },
+    "spacing": { "density": "compact-operational" },
+    "radius": { "cards": "8px", "controls": "6px" },
+    "shadows": {},
+    "motion": {},
+    "density": "dense but readable"
+  },
+  "components": {
+    "installed": [],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": ["evidence-first incident workflow", "honest simulated-data disclosure", "responsive keyboard-operable controls"],
+    "avoid": ["gradients", "glass", "neon", "fake technical chrome", "large pills", "heavy shadows"]
+  },
+  "decisions": [
+    "Replace the dark mockup with a warm editorial operations console: evidence leads, incident queue and response detail follow, and semantic pastels carry status only.",
+    "Use a sparse incident register followed by an asymmetric evidence-and-decision spread; secondary material lives in editorial tabs rather than a permanent cockpit sidebar."
+  ],
+  "evidence": [],
+  "generatedAt": "2026-08-27T16:27:09.609Z"
+}
