@@ -1,0 +1,10 @@
+# Downloaded/extracted public datasets and generated smoke subsets.
+equinox_deliverable_scaffold/equinox/data/visdrone_cache/
+equinox_deliverable_scaffold/equinox/data/visdrone/
+# Local YOLO weights and generated inference outputs.
+equinox_deliverable_scaffold/equinox/artifacts/
+equinox_deliverable_scaffold/equinox/data/visdrone_smoke/
+
+# Python bytecode and local interpreter caches.
+__pycache__/
+*.py[cod]

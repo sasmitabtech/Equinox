@@ -9,13 +9,19 @@ every unique location has a verified mask before frames are used downstream.
 """
 import argparse
 import csv
+import os
 from pathlib import Path
 
 import cv2
 
 
 def extract_frames(clip_path: str, out_dir: Path, target_fps: float):
+    if target_fps <= 0:
+        raise ValueError("target_fps must be greater than zero")
     cap = cv2.VideoCapture(clip_path)
+    if not cap.isOpened():
+        cap.release()
+        raise ValueError(f"Unable to open video clip: {clip_path}")
     src_fps = cap.get(cv2.CAP_PROP_FPS) or target_fps
     stride = max(int(round(src_fps / target_fps)), 1)
 
@@ -27,7 +33,10 @@ def extract_frames(clip_path: str, out_dir: Path, target_fps: float):
             break
         if idx % stride == 0:
             # TODO: apply stabilization here if drone footage has camera jitter
-            cv2.imwrite(str(out_dir / f"{saved:05d}.jpg"), frame)
+            output_path = out_dir / f"{saved:05d}.jpg"
+            if not cv2.imwrite(str(output_path), frame):
+                cap.release()
+                raise IOError(f"Could not write extracted frame: {output_path}")
             saved += 1
         idx += 1
     cap.release()
@@ -37,21 +46,65 @@ def extract_frames(clip_path: str, out_dir: Path, target_fps: float):
 def check_mask(location: str, masks_dir: Path) -> bool:
     """A mask is required per unique vantage point before frames are usable
     for feature engineering (see plan §1.2, §1.3)."""
-    return (masks_dir / f"{location}.png").exists()
+    if not location or Path(location).name != location:
+        return False
+    candidate = masks_dir / f"{location}.png"
+    try:
+        candidate.resolve().relative_to(masks_dir.resolve())
+    except ValueError:
+        return False
+    return candidate.is_file()
+
+
+def resolve_manifest_path(filepath: str, manifest_path: Path) -> Path:
+    """Resolve both POSIX and Windows paths in a portable manifest.
+
+    New manifests contain paths relative to the manifest directory. Existing
+    manifests in the wild may contain backslashes or paths relative to the
+    repository working directory, so try both locations before failing.
+    """
+    if not filepath or not filepath.strip():
+        raise ValueError("Manifest row has an empty filepath")
+    normalised = filepath.replace("\\", os.sep)
+    candidate = Path(normalised)
+    if candidate.is_absolute():
+        return candidate
+    candidates = [manifest_path.parent / candidate, Path.cwd() / candidate]
+    for path in candidates:
+        if path.is_file():
+            return path
+    # Return the contextual path so the error from OpenCV is actionable.
+    return candidates[0]
 
 
 def preprocess(manifest_csv: str, frames_out: str, masks_dir: str, target_fps: float):
+    if target_fps <= 0:
+        raise ValueError("target_fps must be greater than zero")
+    manifest_path = Path(manifest_csv)
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"Manifest does not exist: {manifest_path}")
     frames_out = Path(frames_out)
     masks_dir = Path(masks_dir)
     missing_masks = set()
 
-    with open(manifest_csv) as f:
+    with manifest_path.open(newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            clip_id, location = row["clip_id"], row["location"]
+            clip_id = (row.get("clip_id") or "").strip()
+            location = (row.get("location") or "").strip()
+            if not clip_id:
+                raise ValueError("Manifest contains a row without clip_id")
+            if Path(clip_id).name != clip_id:
+                raise ValueError(f"Unsafe clip_id in manifest: {clip_id!r}")
             if not check_mask(location, masks_dir):
                 missing_masks.add(location)
                 continue  # don't process frames for a location with no mask yet
-            n = extract_frames(row["filepath"], frames_out / clip_id, target_fps)
+            clip_path = resolve_manifest_path(row.get("filepath", ""), manifest_path)
+            if not clip_path.is_file():
+                raise FileNotFoundError(
+                    f"Clip for {clip_id!r} not found at {clip_path} "
+                    f"(manifest: {manifest_path})"
+                )
+            n = extract_frames(str(clip_path), frames_out / clip_id, target_fps)
             print(f"{clip_id}: {n} frames extracted -> {frames_out / clip_id}")
 
     if missing_masks:

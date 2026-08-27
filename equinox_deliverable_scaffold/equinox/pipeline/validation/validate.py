@@ -27,13 +27,28 @@ def validate(model_path: str, features_path: str, labels_path: str, report_out: 
 
     features = pd.read_parquet(features_path)
     labels = pd.read_csv(labels_path)
-    df = features.merge(labels, on=["clip_id", "start_frame", "end_frame"])
+    keys = ["clip_id", "start_frame", "end_frame"]
+    required_features = set(keys + FEATURE_COLS)
+    required_labels = set(keys + ["severity"])
+    missing_features = required_features.difference(features.columns)
+    missing_labels = required_labels.difference(labels.columns)
+    if missing_features:
+        raise ValueError(f"Features missing required column(s): {sorted(missing_features)}")
+    if missing_labels:
+        raise ValueError(f"Labels missing required column(s): {sorted(missing_labels)}")
+    if features.empty or labels.empty:
+        raise ValueError("Features and labels must both contain at least one row")
+    if features.duplicated(keys).any() or labels.duplicated(keys).any():
+        raise ValueError("Feature and label keys must be unique per incident window")
+    df = features.merge(labels, on=keys, validate="one_to_one")
+    if df.empty:
+        raise ValueError("No labeled feature rows matched on clip_id/frame range")
 
     X = df[FEATURE_COLS]
     y_true = df["severity"]
     y_pred = model.predict(X)
 
-    report = classification_report(y_true, y_pred, output_dict=False)
+    report = classification_report(y_true, y_pred, output_dict=False, zero_division=0)
     cm = confusion_matrix(y_true, y_pred, labels=["Normal", "Moderate", "Severe", "Critical"])
 
     # Flag the failure mode judges will ask about first.
