@@ -1,0 +1,5 @@
+clip_id,filepath,location,lat,lon,timestamp,fps,duration_s,source
+clip_01_hosur_j4,data\raw\clip_01_hosur_j4.mp4,Hosur_Rd_J4,12.845,77.663,2026-08-26T10:41:52,15.0,4.0,drone_alpha
+clip_02_service_rd,data\raw\clip_02_service_rd.mp4,Service_Rd_Bl9,12.839,77.678,2026-08-26T10:37:10,15.0,4.0,drone_beta
+clip_03_neeladri_rd,data\raw\clip_03_neeladri_rd.mp4,Neeladri_Rd_R2,12.851,77.671,2026-08-26T10:22:45,15.0,4.0,drone_alpha
+clip_04_wipro_jct,data\raw\clip_04_wipro_jct.mp4,Wipro_Junction,12.842,77.665,2026-08-26T09:58:03,15.0,4.0,drone_gamma

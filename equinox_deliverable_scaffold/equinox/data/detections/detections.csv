@@ -1,0 +1,61 @@
+clip_id,frame_idx,track_id,cls,bbox,conf
+clip_01_hosur_j4,0,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,0,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,1,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,1,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,2,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,2,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,3,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,3,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,4,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,4,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,5,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,5,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,6,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,6,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,7,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,7,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,8,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,8,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,9,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,9,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,10,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,10,102,debris,"[372, 242, 408, 278]",0.88
+clip_01_hosur_j4,11,101,stalled vehicle,"[270, 200, 370, 280]",0.94
+clip_01_hosur_j4,11,102,debris,"[372, 242, 408, 278]",0.88
+clip_02_service_rd,0,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,1,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,2,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,3,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,4,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,5,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,6,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,7,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,8,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,9,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,10,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_02_service_rd,11,201,illegal parking,"[130, 150, 210, 270]",0.91
+clip_03_neeladri_rd,0,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,1,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,2,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,3,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,4,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,5,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,6,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,7,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,8,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,9,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,10,301,congestion,"[300, 120, 360, 190]",0.82
+clip_03_neeladri_rd,11,301,congestion,"[300, 120, 360, 190]",0.82
+clip_04_wipro_jct,0,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,1,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,2,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,3,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,4,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,5,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,6,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,7,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,8,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,9,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,10,401,vehicle,"[200, 50, 250, 100]",0.96
+clip_04_wipro_jct,11,401,vehicle,"[200, 50, 250, 100]",0.96

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equinox — Corridor Watch Operator Dashboard</title>
+<style>
+  :root{
+    --bg:#0a0e13;
+    --panel:#10161d;
+    --panel-2:#151d26;
+    --line:#212b36;
+    --text:#e7ecf1;
+    --muted:#6b7887;
+    --clear:#33c2b8;
+    --moderate:#e0a83e;
+    --severe:#e2703a;
+    --critical:#d6304a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    height:100vh; overflow:hidden;
+  }
+  .mono{font-family:'JetBrains Mono','Courier New',monospace;}
+
+  /* Top bar */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 22px; border-bottom:1px solid var(--line);
+    background:var(--panel);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .mark{
+    width:12px;height:12px;border-radius:3px;background:var(--clear);
+    box-shadow:0 0 12px var(--clear);
+    animation:pulse 2.2s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .brand h1{font-size:16px; font-weight:700; letter-spacing:.04em; color:#fff;}
+  .brand span{color:var(--muted); font-size:11px; font-family:'JetBrains Mono',monospace;}
+  .ticker{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
+    display:flex; gap:26px; align-items:center;
+  }
+  .ticker b{color:var(--text); font-weight:600;}
+  .api-status{
+    display:flex; align-items:center; gap:6px; font-size:11px; background:#12201d; color:var(--clear);
+    padding:3px 8px; border-radius:12px; border:1px solid #1c4540;
+  }
+  .api-dot{width:6px; height:6px; border-radius:50%; background:var(--clear);}
+
+  /* Layout */
+  .wrap{display:grid; grid-template-columns: 340px 1fr 300px; height:calc(100vh - 53px);}
+
+  /* Queue */
+  .queue{border-right:1px solid var(--line); overflow-y:auto; background:var(--panel);}
+  .queue-head{padding:14px 16px 8px; font-size:11px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; display:flex; justify-content:space-between;}
+  .card{
+    margin:0 10px 10px; padding:12px; border-radius:6px;
+    background:var(--panel-2); border:1px solid var(--line);
+    border-left:4px solid var(--sev-color, var(--critical));
+    cursor:pointer; transition:all .15s ease-in-out;
+  }
+  .card:hover{border-color:#33404d; border-left-color:var(--sev-color, var(--critical)); transform:translateY(-1px);}
+  .card.active{background:#18222d; border-color:#3b4c5e; box-shadow:0 2px 10px rgba(0,0,0,0.3);}
+  .card-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .badge{
+    font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 7px; border-radius:3px;
+    text-transform:uppercase; letter-spacing:.05em; font-weight:700;
+    color:#0a0e13; background:var(--sev-color, var(--critical));
+  }
+  .card-loc{font-size:13px; font-weight:600; color:var(--text);}
+  .card-meta{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--muted); margin-top:4px;}
+  .card-status{font-size:10.5px; margin-top:8px; color:var(--muted);}
+  .card-status b{color:var(--text);}
+
+  /* Center: evidence + detail */
+  .center{display:flex; flex-direction:column; border-right:1px solid var(--line); background:#0c1117;}
+  .evidence{
+    flex:1.2; position:relative; background:#080c10;
+    overflow:hidden; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  }
+  .evidence-video{
+    width:100%; height:100%; object-fit:cover; max-height:420px;
+  }
+  .sweep{
+    position:absolute; top:0; bottom:0; width:140px; pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(51,194,184,.06), transparent);
+    animation:sweep 5s linear infinite;
+  }
+  @keyframes sweep{0%{left:-140px;}100%{left:100%;}}
+  
+  .bbox{
+    position:absolute; border:2px solid var(--sev-color, var(--critical));
+    border-radius:2px; pointer-events:none; box-shadow:0 0 8px rgba(0,0,0,0.5);
+  }
+  .bbox::before{
+    content:attr(data-label); position:absolute; top:-19px; left:-2px;
+    font-family:'JetBrains Mono',monospace; font-size:9px; background:var(--sev-color, var(--critical));
+    color:#0a0e13; padding:1px 6px; border-radius:2px; white-space:nowrap; font-weight:700;
+  }
+  .evidence-tag{
+    position:absolute; bottom:14px; left:14px; font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; color:var(--muted); background:rgba(10,14,19,.85); padding:6px 12px; border-radius:4px;
+    border:1px solid var(--line); backdrop-filter:blur(4px);
+  }
+  .evidence-tag b{color:var(--text);}
+
+  .detail{padding:18px 22px; overflow-y:auto; flex:1;}
+  .detail h2{font-size:18px; margin-bottom:4px; font-weight:700; color:#fff;}
+  .detail .sub{color:var(--muted); font-size:12px; font-family:'JetBrains Mono',monospace; margin-bottom:16px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px;}
+  .stat{background:var(--panel-2); border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+  .stat .lbl{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;}
+  .stat .val{font-size:16px; font-weight:700; font-family:'JetBrains Mono',monospace;}
+  
+  .rec{
+    background:linear-gradient(135deg, #1d1414, #14090c); border:1px solid #4a2127; border-radius:6px;
+    padding:12px 14px; font-size:12.5px; line-height:1.5; margin-bottom:16px; color:#f0d0d0;
+  }
+  .rec b{color:var(--critical); font-weight:700;}
+  
+  .steps-wrap{margin-bottom:16px;}
+  .steps-lbl{display:flex; justify-content:space-between; font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:6px;}
+  .steps{display:flex; gap:6px;}
+  .step{flex:1; height:6px; border-radius:3px; background:var(--line); transition:background .3s;}
+  .step.done{background:var(--clear); box-shadow:0 0 6px rgba(51,194,184,0.4);}
+  .step.active{background:var(--moderate); box-shadow:0 0 6px rgba(224,168,62,0.4);}
+
+  .actions{display:flex; gap:10px; margin-top:16px;}
+  .btn{
+    flex:1; padding:10px 14px; border-radius:6px; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--text); font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .btn:hover{background:#1f2b38; border-color:#364656;}
+  .btn.primary{background:var(--clear); color:#08110f; border:none; font-weight:700;}
+  .btn.primary:hover{background:#3de3d8; box-shadow:0 0 12px rgba(51,194,184,0.3);}
+  .btn.verify{background:#2b8a3e; color:#fff; border:none; font-weight:700;}
+  .btn.verify:hover{background:#37b24d;}
+
+  /* Right: accessibility gauge */
+  .side{padding:20px; background:var(--panel); overflow-y:auto;}
+  .side h3{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:14px;}
+  .gauge-wrap{display:flex; flex-direction:column; align-items:center; margin-bottom:24px; background:var(--panel-2); padding:18px; border-radius:8px; border:1px solid var(--line);}
+  .gauge-num{font-family:'JetBrains Mono',monospace; font-size:38px; font-weight:700; color:var(--critical); transition:color .3s;}
+  .gauge-lbl{font-size:11px; color:var(--muted); margin-top:4px; text-align:center;}
+  
+  .legend{display:flex; flex-direction:column; gap:8px; font-size:11.5px; margin-bottom:24px;}
+  .legend .row{display:flex; align-items:center; gap:10px; color:var(--muted);}
+  .dot{width:8px;height:8px;border-radius:50%;}
+  
+  .factors{display:flex; flex-direction:column; gap:10px;}
+  .factor{font-size:11.5px; color:var(--text); padding-left:14px; position:relative; line-height:1.4;}
+  .factor::before{content:"–"; position:absolute; left:0; color:var(--clear);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark"></div>
+    <h1>EQUINOX</h1>
+    <span>CORRIDOR WATCH · ELECTRONICS CITY SECTOR</span>
+  </div>
+  <div class="ticker">
+    <div class="api-status"><div class="api-dot"></div>API LIVE</div>
+    <div>CLIPS ANALYZED <b id="stat-clips">14</b></div>
+    <div>OPEN INCIDENTS <b id="stat-open">3</b></div>
+    <div>OPERATOR <b>J. MARIA</b></div>
+    <div class="mono" id="clock">10:42:07</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- QUEUE -->
+  <div class="queue">
+    <div class="queue-head">
+      <span>Incident Queue</span>
+      <span class="mono" id="queue-count">0 items</span>
+    </div>
+    <div id="cards-container">
+      <!-- Dynamic Incident Cards rendered here -->
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="evidence" id="evidence-box">
+      <div class="sweep"></div>
+      <video id="evidence-video" class="evidence-video" autoplay loop muted playsinline src="">
+      </video>
+      <div id="bbox-container"></div>
+      <div class="evidence-tag">Corridor: <b id="det-corridor">Hosur Rd J4 · northbound</b></div>
+    </div>
+
+    <div class="detail">
+      <h2 id="det-location">Hosur Rd — Junction 4</h2>
+      <div class="sub" id="det-meta">detected 10:41:52 · stalled vehicle + debris · multi-frame confirmed (14 frames)</div>
+
+      <div class="grid2">
+        <div class="stat"><div class="lbl">Incident Class</div><div class="val" id="det-class">Stalled Vehicle</div></div>
+        <div class="stat"><div class="lbl">Severity</div><div class="val" id="det-severity" style="color:var(--critical);">Critical</div></div>
+        <div class="stat"><div class="lbl">Status</div><div class="val" id="det-status-text">Open</div></div>
+      </div>
+
+      <div class="rec" id="det-rec">
+        <b>Recommended action:</b> Loading action...
+      </div>
+
+      <div class="steps-wrap">
+        <div class="steps-lbl"><span>Open</span><span>Assigned</span><span>In Action</span><span>Cleared</span><span>Verified</span></div>
+        <div class="steps" id="pipeline-steps">
+          <div class="step done"></div><div class="step"></div><div class="step"></div><div class="step"></div><div class="step"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btn-assign" onclick="handleAction('Assigned')">Assign to Me</button>
+        <button class="btn" id="btn-action" onclick="handleAction('In Action')">Suggest Diversion</button>
+        <button class="btn" id="btn-clear" onclick="handleAction('Cleared')">Mark Cleared</button>
+        <button class="btn verify" id="btn-verify" onclick="handleRecheck()">Verify Clearance Scan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE -->
+  <div class="side">
+    <h3>Emergency Accessibility</h3>
+    <div class="gauge-wrap">
+      <div class="gauge-num" id="gauge-num">28<span style="font-size:16px;color:var(--muted);">/100</span></div>
+      <div class="gauge-lbl" id="gauge-lbl">passable with major delay</div>
+    </div>
+
+    <h3>Severity Scale</h3>
+    <div class="legend">
+      <div class="row"><div class="dot" style="background:var(--clear)"></div>Normal — road clear</div>
+      <div class="row"><div class="dot" style="background:var(--moderate)"></div>Moderate — slight delay</div>
+      <div class="row"><div class="dot" style="background:var(--severe)"></div>Severe — significant delay</div>
+      <div class="row"><div class="dot" style="background:var(--critical)"></div>Critical — corridor blocked</div>
+    </div>
+
+    <h3>Contributing Factors</h3>
+    <div class="factors" id="det-factors">
+      <div class="factor">Road occupancy: 82% of usable width</div>
+      <div class="factor">Clear lane width: 1.1 m (below 1.5 m threshold)</div>
+      <div class="factor">Obstruction dwell time: 11.2 s and rising</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let incidentsData = [];
+  let selectedId = null;
+
+  function getSevColor(severity) {
+    switch((severity || '').toLowerCase()) {
+      case 'critical': return 'var(--critical)';
+      case 'severe': return 'var(--severe)';
+      case 'moderate': return 'var(--moderate)';
+      default: return 'var(--clear)';
+    }
+  }
+
+  function getGaugeText(score) {
+    if (score >= 80) return "fully passable corridor";
+    if (score >= 60) return "passable with slight delay";
+    if (score >= 40) return "restricted passage / heavy delay";
+    return "passable with major delay / critical obstruction";
+  }
+
+  function updateClock() {
+    const d = new Date();
+    document.getElementById('clock').textContent = d.toTimeString().slice(0,8);
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  async function fetchIncidents() {
+    try {
+      const res = await fetch('/incidents');
+      if (res.ok) {
+        incidentsData = await res.json();
+        renderQueue();
+        if (incidentsData.length > 0) {
+          if (!selectedId || !incidentsData.find(i => i.incident_id === selectedId)) {
+            selectedId = incidentsData[0].incident_id;
+          }
+          renderDetails(selectedId);
+        }
+      }
+    } catch (e) {
+      console.warn("API fetch offline, using local state", e);
+    }
+  }
+
+  function renderQueue() {
+    const container = document.getElementById('cards-container');
+    document.getElementById('queue-count').textContent = `${incidentsData.length} items`;
+    
+    let openCount = 0;
+    container.innerHTML = incidentsData.map(inc => {
+      if (inc.status !== 'Verified' && inc.status !== 'Cleared') openCount++;
+      const isSelected = inc.incident_id === selectedId;
+      const color = getSevColor(inc.severity);
+      
+      return `
+        <div class="card ${isSelected ? 'active' : ''}" 
+             style="--sev-color: ${color}; opacity: ${inc.status === 'Verified' ? '0.6' : '1'}"
+             onclick="selectIncident('${inc.incident_id}')">
+          <div class="card-top">
+            <span class="card-loc">${inc.location}</span>
+            <span class="badge" style="--sev-color: ${color}">${inc.severity}</span>
+          </div>
+          <div class="card-meta">${inc.timestamp} · GPS ${inc.lat}, ${inc.lon}</div>
+          <div class="card-status">Status: <b>${inc.status}</b> — ${inc.incident_class}</div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('stat-open').textContent = openCount;
+  }
+
+  function selectIncident(id) {
+    selectedId = id;
+    renderQueue();
+    renderDetails(id);
+  }
+
+  function renderDetails(id) {
+    const inc = incidentsData.find(i => i.incident_id === id);
+    if (!inc) return;
+
+    document.getElementById('det-location').textContent = inc.location;
+    document.getElementById('det-meta').textContent = `detected ${inc.timestamp} · ${inc.incident_class} · multi-frame confirmed`;
+    document.getElementById('det-class').textContent = inc.incident_class;
+    
+    const sevEl = document.getElementById('det-severity');
+    sevEl.textContent = inc.severity;
+    sevEl.style.color = getSevColor(inc.severity);
+    
+    document.getElementById('det-status-text').textContent = inc.status;
+    document.getElementById('det-rec').innerHTML = `<b>Recommended action:</b> ${inc.recommended_action}`;
+    document.getElementById('det-corridor').textContent = inc.corridor || inc.location;
+
+    // Video evidence
+    const video = document.getElementById('evidence-video');
+    if (inc.evidence_url && video.getAttribute('src') !== inc.evidence_url) {
+      video.src = inc.evidence_url;
+      video.play().catch(err => console.log("Autoplay check:", err));
+    }
+
+    // Bounding Box Overlays
+    const bboxContainer = document.getElementById('bbox-container');
+    const sevColor = getSevColor(inc.severity);
+    if (inc.severity === 'Critical') {
+      bboxContainer.innerHTML = `
+        <div class="bbox" data-label="stalled vehicle 0.94" style="top:38%; left:42%; width:120px; height:70px; --sev-color:${sevColor}"></div>
+        <div class="bbox" data-label="debris 0.88" style="top:52%; left:58%; width:50px; height:35px; --sev-color:var(--severe)"></div>
+      `;
+    } else if (inc.severity === 'Severe') {
+      bboxContainer.innerHTML = `
+        <div class="bbox" data-label="illegal parking 0.91" style="top:30%; left:20%; width:110px; height:80px; --sev-color:${sevColor}"></div>
+      `;
+    } else if (inc.severity === 'Moderate') {
+      bboxContainer.innerHTML = `
+        <div class="bbox" data-label="congestion 0.82" style="top:45%; left:46%; width:90px; height:60px; --sev-color:${sevColor}"></div>
+      `;
+    } else {
+      bboxContainer.innerHTML = `
+        <div class="bbox" data-label="vehicle 0.96" style="top:30%; left:30%; width:70px; height:45px; --sev-color:${sevColor}"></div>
+      `;
+    }
+
+    // Gauge Score
+    const gaugeNum = document.getElementById('gauge-num');
+    gaugeNum.innerHTML = `${inc.accessibility_score}<span style="font-size:16px;color:var(--muted);">/100</span>`;
+    gaugeNum.style.color = getSevColor(inc.severity);
+    document.getElementById('gauge-lbl').textContent = getGaugeText(inc.accessibility_score);
+
+    // Factors
+    const factorsContainer = document.getElementById('det-factors');
+    if (inc.contributing_factors && inc.contributing_factors.length > 0) {
+      factorsContainer.innerHTML = inc.contributing_factors.map(f => `<div class="factor">${f}</div>`).join('');
+    } else {
+      factorsContainer.innerHTML = `<div class="factor">Standard monitoring active</div>`;
+    }
+
+    // Pipeline steps
+    const statusMap = { 'Open': 0, 'Assigned': 1, 'In Action': 2, 'Cleared': 3, 'Verified': 4 };
+    const currentIdx = statusMap[inc.status] !== undefined ? statusMap[inc.status] : 0;
+    const stepEls = document.querySelectorAll('#pipeline-steps .step');
+    stepEls.forEach((el, idx) => {
+      el.className = 'step';
+      if (idx < currentIdx) el.classList.add('done');
+      if (idx === currentIdx) el.classList.add('active');
+    });
+  }
+
+  async function handleAction(newStatus) {
+    if (!selectedId) return;
+    try {
+      const res = await fetch(`/incidents/${selectedId}/status?status=${encodeURIComponent(newStatus)}`, { method: 'PATCH' });
+      if (res.ok) {
+        await fetchIncidents();
+      }
+    } catch (e) {
+      console.error("Failed to update status", e);
+    }
+  }
+
+  async function handleRecheck() {
+    if (!selectedId) return;
+    try {
+      const res = await fetch(`/incidents/${selectedId}/recheck`, { method: 'POST' });
+      if (res.ok) {
+        await fetchIncidents();
+      }
+    } catch (e) {
+      console.error("Failed to trigger re-check", e);
+    }
+  }
+
+  // Initial load and periodic polling
+  fetchIncidents();
+  setInterval(fetchIncidents, 4000);
+</script>
+
+</body>
+</html>

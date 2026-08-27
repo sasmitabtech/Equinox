@@ -1,0 +1,5 @@
+clip_id,start_frame,end_frame,severity,accessibility_score
+clip_01_hosur_j4,0,11,Critical,28
+clip_02_service_rd,0,11,Severe,45
+clip_03_neeladri_rd,0,11,Moderate,68
+clip_04_wipro_jct,0,11,Normal,95
