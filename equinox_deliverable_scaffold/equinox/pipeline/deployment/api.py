@@ -5,38 +5,39 @@ and the interactive operator dashboard.
 """
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional
 import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="Equinox Corridor Watch API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+VALID_STATUSES = ("Open", "Assigned", "In Action", "Cleared", "Verified")
 
 
 class Incident(BaseModel):
     incident_id: str
     incident_class: str          # stalled vehicle | illegal parking | debris | congestion | lane blockage
     location: str
-    lat: float
-    lon: float
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
     timestamp: str
-    severity: str                 # Normal | Moderate | Severe | Critical
-    accessibility_score: int      # 0-100
+    severity: Literal["Normal", "Moderate", "Severe", "Critical"]
+    accessibility_score: int = Field(ge=0, le=100)  # 0-100
     recommended_action: str
-    status: str                   # Open | Assigned | In Action | Cleared | Verified
+    status: Literal["Open", "Assigned", "In Action", "Cleared", "Verified"]
     evidence_url: Optional[str] = None
     corridor: Optional[str] = "Main Emergency Route"
-    contributing_factors: List[str] = []
-    clear_lane_width_m: float = 1.5
-    road_occupancy_pct: float = 50.0
-    dwell_time_s: float = 0.0
+    contributing_factors: List[str] = Field(default_factory=list)
+    clear_lane_width_m: float = Field(default=1.5, ge=0)
+    road_occupancy_pct: float = Field(default=50.0, ge=0, le=100)
+    dwell_time_s: float = Field(default=0.0, ge=0)
 
 
 # Seed initial incidents for the prototype
@@ -150,21 +151,23 @@ def get_incident(incident_id: str):
 
 @app.post("/incidents", response_model=Incident)
 def create_incident(incident: Incident):
+    if any(existing.incident_id == incident.incident_id for existing in _INCIDENTS):
+        raise HTTPException(status_code=409, detail="Incident ID already exists")
     _INCIDENTS.append(incident)
     return incident
 
 
 @app.patch("/incidents/{incident_id}/status")
 def update_status(incident_id: str, status: str):
-    valid_statuses = ["Open", "Assigned", "In Action", "Cleared", "Verified"]
-    if status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of {valid_statuses}")
+    if status not in VALID_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of {list(VALID_STATUSES)}")
 
     for inc in _INCIDENTS:
         if inc.incident_id == incident_id:
+            previous_status = inc.status
             inc.status = status
             # Clearance verification step (plan §1.6 / §11)
-            if status == "Cleared":
+            if status == "Cleared" and previous_status != "Cleared":
                 # Simulated auto re-check improving score
                 inc.accessibility_score = min(100, inc.accessibility_score + 40)
                 if inc.accessibility_score >= 80:
@@ -209,9 +212,21 @@ def health():
 # Serve raw video files for evidence playback
 @app.get("/api/video/{filename}")
 def serve_video(filename: str):
-    video_path = BASE_DIR / "data" / "raw" / filename
-    if video_path.exists():
-        return FileResponse(str(video_path), media_type="video/mp4")
+    video_dir = (BASE_DIR / "data" / "raw").resolve()
+    # Only serve direct media files from data/raw; reject traversal and
+    # arbitrary extensions before constructing the path.
+    if not filename or Path(filename).name != filename:
+        raise HTTPException(status_code=404, detail="Video file not found")
+    if Path(filename).suffix.lower() not in {".mp4", ".mov"}:
+        raise HTTPException(status_code=404, detail="Video file not found")
+    video_path = (video_dir / filename).resolve()
+    try:
+        video_path.relative_to(video_dir)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Video file not found")
+    if video_path.is_file():
+        media_type = "video/quicktime" if video_path.suffix.lower() == ".mov" else "video/mp4"
+        return FileResponse(str(video_path), media_type=media_type)
     # Fallback to empty/mock if video file not yet generated
     raise HTTPException(status_code=404, detail="Video file not found")
 
